@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Droppable } from "@/components/ui/droppable";
 import { Loader2, PlusIcon } from "lucide-react";
 import { DroppableArea } from "./droppable";
+import { dispatch } from "@designcombo/events";
+import { ADD_AUDIO, ADD_IMAGE, ADD_VIDEO } from "@designcombo/state";
+import { generateId } from "@designcombo/timeline";
 
 const SceneEmpty = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +33,42 @@ const SceneEmpty = () => {
   }, [size]);
 
   const onSelectFiles = (files: File[]) => {
-    console.log({ files });
+    for (const file of files) {
+      const src = URL.createObjectURL(file);
+      const id = generateId();
+
+      if (file.type.startsWith("video/")) {
+        dispatch(ADD_VIDEO, {
+          payload: {
+            id,
+            details: { src },
+            metadata: { previewUrl: "" }
+          },
+          options: { resourceId: "main", scaleMode: "fit" }
+        });
+      } else if (file.type.startsWith("image/")) {
+        dispatch(ADD_IMAGE, {
+          payload: {
+            id,
+            type: "image",
+            display: { from: 0, to: 5000 },
+            details: { src },
+            metadata: {}
+          },
+          options: {}
+        });
+      } else if (file.type.startsWith("audio/")) {
+        dispatch(ADD_AUDIO, {
+          payload: {
+            id,
+            type: "audio",
+            details: { src },
+            metadata: {}
+          },
+          options: {}
+        });
+      }
+    }
   };
 
   return (

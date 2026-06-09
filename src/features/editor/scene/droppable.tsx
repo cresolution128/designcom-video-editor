@@ -46,7 +46,7 @@ const useDragAndDrop = (onDragStateChange?: (isDragging: boolean) => void) => {
       e.preventDefault();
       try {
         const draggedDataString = e.dataTransfer?.types[0] as string;
-        if (!draggedDataString) return;
+        if (!draggedDataString || draggedDataString === "Files") return;
         const draggedData: DraggedData = JSON.parse(draggedDataString);
 
         if (!Object.values(AcceptedDropTypes).includes(draggedData.type))
@@ -55,7 +55,7 @@ const useDragAndDrop = (onDragStateChange?: (isDragging: boolean) => void) => {
         setIsPointerInside(true);
         onDragStateChange?.(true);
       } catch (error) {
-        console.error("Error parsing dragged data:", error);
+        // Silently ignore non-JSON drag types (e.g. native file drops)
       }
     },
     [onDragStateChange]
@@ -81,12 +81,13 @@ const useDragAndDrop = (onDragStateChange?: (isDragging: boolean) => void) => {
 
       try {
         const draggedDataString = e.dataTransfer?.types[0] as string;
+        if (!draggedDataString || draggedDataString === "Files") return;
         const draggedData = JSON.parse(
           e.dataTransfer!.getData(draggedDataString)
         );
         handleDrop(draggedData);
       } catch (error) {
-        console.error("Error parsing dropped data:", error);
+        // Silently ignore non-JSON drag types (e.g. native file drops)
       }
     },
     [isDraggingOver, onDragStateChange, handleDrop]
